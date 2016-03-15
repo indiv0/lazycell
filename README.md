@@ -1,4 +1,5 @@
 # lazycell
+[![Build Status](https://travis-ci.org/indiv0/lazycell.svg?branch=master)](https://travis-ci.org/indiv0/lazycell)
 
 Rust library providing a lazily filled Cell.
 

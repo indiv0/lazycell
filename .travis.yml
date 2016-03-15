@@ -1,0 +1,48 @@
+language: rust
+# run builds for all the trains (and more)
+rust:
+  - nightly
+  - beta
+  # check that it compiles on the latest stable compiler
+  - stable
+  # and the first stable one (this should be bumped as the minimum Rust version
+  # required changes)
+  - 1.0.0
+os:
+  - linux
+  - osx
+cache:
+  directories:
+    - $HOME/.cargo
+before_script:
+  # load travis-cargo
+  - |
+      pip install 'travis-cargo<0.2' --user &&
+      export PATH=$HOME/.local/bin/:$PATH &&
+      export PATH=$HOME/Library/Python/2.7/bin:$PATH
+# the main build
+script:
+  - |
+      travis-cargo build &&
+      travis-cargo test &&
+      travis-cargo bench &&
+      travis-cargo --only stable doc
+after_success:
+  # upload the documentation from the build with stable (automatically only
+  # actually runs from the master branch, not individual PRs)
+  - travis-cargo --only stable doc-upload
+env:
+  global:
+    # override the default '--features unstable' used for the nightly branch
+    - TRAVIS_CARGO_NIGHTLY_FEATURE="nightly-testing"
+    # encrypted Github token for doc upload
+    - secure: kQKcc0WiucWrIGC+t7ASfoKGs9nGdll94egke0pFTBIsh8e4dPgUK6hGBGfJE32FJS6VB3lyoAqNQQDCLnYwxsq2IOL4T1F65K4bDS9IvR1HXduvXj+z5NHU5VAerD7Czc0q+9Na2qEZQPEW9u6+eX4xX5E0c4p0eUoGMNQaXYg5bzRJ68uC8d8WAj2KOXx8G7Seak5xBmvP5vOBWJjCMv7leVoWwfP9OI+MizzDhzeYL5ux49STsP67/jrL37Otdly6Cvv9NsamCyoZ3McQq436pViUl2XJ3/ctvc17JNm+FdIdjKaZL1fMje2xyvYK9weyKjRiMmkDETWvsCFqL/Y37Oe80kh+KFKYSxgl6Q5IaiO35hUjBRDVmi/zuZGD8cI3GVE/qFj2yN+/srBzORgpJgofPaMurI6udQoCNiNqvAh9PJ0KpKvkCGNTUUXDYcv9k4BLIpudY0HqTNM341MkOD98NC99TsA9eJwWyEre3rLqkVztTzkGa7VM1MT/6bgVi+BdPfO3AEy5xs1Y4ut2Qzl54rFK2AGRFDdJ4CvyQykBg/EDxpkI7w0VdqUyOrSWNQFqv4xTwXPd91r2OhUUm76gsN50gwZTxJvae/aIGRdd3GyNQ149HHzNB5HLpct5KsGlCcwQ7QcbKFQkpCLC0R3sgeKGUaRbqZjwN5M=
+branches:
+  only:
+    - master
+    - auto
+notifications:
+  email: false
+matrix:
+  allow_failures:
+    - rust: nightly
