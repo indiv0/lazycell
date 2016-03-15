@@ -1,6 +1,8 @@
 # lazycell
 [![Build Status](https://travis-ci.org/indiv0/lazycell.svg?branch=master)](https://travis-ci.org/indiv0/lazycell)
 [![Clippy Linting Result](http://clippy.bashy.io/github/indiv0/lazycell/master/badge.svg)](http://clippy.bashy.io/github/indiv0/lazycell/master/log)
+[![Crates.io](https://img.shields.io/crates/v/lazycell.svg)](https://crates.io/crates/lazycell)
+[![License: MIT/Apache-2.0](https://img.shields.io/crates/l/lazycell.svg)](#License)
 
 Rust library providing a lazily filled Cell.
 
