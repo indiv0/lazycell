@@ -20,12 +20,14 @@
 //! The limitation of a `LazyCell` is that after initialized, it can never be
 //! modified.
 
+#![deny(missing_docs)]
 #![cfg_attr(feature = "nightly", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
 use std::cell::RefCell;
 use std::mem;
 
+/// A lazily filled Cell, with frozen contents.
 pub struct LazyCell<T> {
     inner: RefCell<Option<T>>,
 }
