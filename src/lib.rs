@@ -40,9 +40,13 @@
 //! assert_eq!(lazycell.borrow(), Some(&1));
 //! assert_eq!(lazycell.into_inner(), Some(1));
 //! ```
+//!
+//! `AtomicLazyCell` is a variant that uses an atomic variable to manage
+//! coordination in a thread-safe fashion.
 
-use std::cell::RefCell;
+use std::cell::{RefCell, UnsafeCell};
 use std::mem;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A lazily filled `Cell`, with frozen contents.
 pub struct LazyCell<T> {
@@ -89,9 +93,72 @@ impl<T> LazyCell<T> {
     }
 }
 
+// Tracks the AtomicLazyCell inner state
+const NONE: usize = 0;
+const LOCK: usize = 1;
+const SOME: usize = 2;
+
+/// A lazily filled `Cell`, with frozen contents.
+pub struct AtomicLazyCell<T> {
+    inner: UnsafeCell<Option<T>>,
+    state: AtomicUsize,
+}
+
+impl<T> AtomicLazyCell<T> {
+    /// Creates a new, empty, `AtomicLazyCell`.
+    pub fn new() -> AtomicLazyCell<T> {
+        AtomicLazyCell {
+            inner: UnsafeCell::new(None),
+            state: AtomicUsize::new(NONE),
+        }
+    }
+
+    /// Put a value into this cell.
+    ///
+    /// This function will return Err(value) is the cell is already full.
+    pub fn fill(&self, t: T) -> Result<(), T> {
+        if NONE != self.state.compare_and_swap(NONE, LOCK, Ordering::Acquire) {
+            return Err(t);
+        }
+
+        unsafe { *self.inner.get() = Some(t) };
+
+        if LOCK != self.state.compare_and_swap(LOCK, SOME, Ordering::Release) {
+            panic!("unable to release lock");
+        }
+
+        Ok(())
+    }
+
+    /// Test whether this cell has been previously filled.
+    pub fn filled(&self) -> bool {
+        self.state.load(Ordering::Acquire) == SOME
+    }
+
+    /// Borrows the contents of this lazy cell for the duration of the cell
+    /// itself.
+    ///
+    /// This function will return `Some` if the cell has been previously
+    /// initialized, and `None` if it has not yet been initialized.
+    pub fn borrow(&self) -> Option<&T> {
+        match self.state.load(Ordering::Acquire) {
+            SOME => unsafe { &*self.inner.get() }.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// Consumes this `LazyCell`, returning the underlying value.
+    pub fn into_inner(self) -> Option<T> {
+        unsafe { self.inner.into_inner() }
+    }
+}
+
+unsafe impl<T: Sync> Sync for AtomicLazyCell<T> { }
+unsafe impl<T: Send> Send for AtomicLazyCell<T> { }
+
 #[cfg(test)]
 mod tests {
-    use super::LazyCell;
+    use super::{LazyCell, AtomicLazyCell};
 
     #[test]
     fn test_borrow_from_empty() {
@@ -127,6 +194,43 @@ mod tests {
         let lazycell = LazyCell::new();
 
         lazycell.fill(1);
+        let value = lazycell.into_inner();
+        assert_eq!(value, Some(1));
+    }
+
+    #[test]
+    fn test_atomic_borrow_from_empty() {
+        let lazycell: AtomicLazyCell<usize> = AtomicLazyCell::new();
+
+        let value = lazycell.borrow();
+        assert_eq!(value, None);
+    }
+
+    #[test]
+    fn test_atomic_fill_and_borrow() {
+        let lazycell = AtomicLazyCell::new();
+
+        assert!(!lazycell.filled());
+        lazycell.fill(1).unwrap();
+        assert!(lazycell.filled());
+
+        let value = lazycell.borrow();
+        assert_eq!(value, Some(&1));
+    }
+
+    #[test]
+    fn test_atomic_already_filled_panic() {
+        let lazycell = AtomicLazyCell::new();
+
+        lazycell.fill(1).unwrap();
+        assert_eq!(1, lazycell.fill(1).unwrap_err());
+    }
+
+    #[test]
+    fn test_atomic_into_inner() {
+        let lazycell = AtomicLazyCell::new();
+
+        lazycell.fill(1).unwrap();
         let value = lazycell.into_inner();
         assert_eq!(value, Some(1));
     }
