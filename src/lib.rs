@@ -44,26 +44,25 @@
 //! `AtomicLazyCell` is a variant that uses an atomic variable to manage
 //! coordination in a thread-safe fashion.
 
-use std::cell::{RefCell, UnsafeCell};
-use std::mem;
+use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A lazily filled `Cell`, with frozen contents.
 pub struct LazyCell<T> {
-    inner: RefCell<Option<T>>,
+    inner: UnsafeCell<Option<T>>,
 }
 
 impl<T> LazyCell<T> {
     /// Creates a new, empty, `LazyCell`.
     pub fn new() -> LazyCell<T> {
-        LazyCell { inner: RefCell::new(None) }
+        LazyCell { inner: UnsafeCell::new(None) }
     }
 
     /// Put a value into this cell.
     ///
     /// This function will fail if the cell has already been filled.
     pub fn fill(&self, t: T) {
-        let mut slot = self.inner.borrow_mut();
+        let mut slot = unsafe { &mut *self.inner.get() };
         if slot.is_some() {
             panic!("lazy cell is already filled")
         }
@@ -72,7 +71,7 @@ impl<T> LazyCell<T> {
 
     /// Test whether this cell has been previously filled.
     pub fn filled(&self) -> bool {
-        self.inner.borrow().is_some()
+        self.borrow().is_some()
     }
 
     /// Borrows the contents of this lazy cell for the duration of the cell
@@ -81,15 +80,12 @@ impl<T> LazyCell<T> {
     /// This function will return `Some` if the cell has been previously
     /// initialized, and `None` if it has not yet been initialized.
     pub fn borrow(&self) -> Option<&T> {
-        match *self.inner.borrow() {
-            Some(ref inner) => unsafe { Some(mem::transmute(inner)) },
-            None => None,
-        }
+        unsafe { &*self.inner.get() }.as_ref()
     }
 
     /// Consumes this `LazyCell`, returning the underlying value.
     pub fn into_inner(self) -> Option<T> {
-        self.inner.into_inner()
+        unsafe { self.inner.into_inner() }
     }
 }
 
