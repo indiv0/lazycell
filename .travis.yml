@@ -39,6 +39,8 @@ after_success:
   # speed. <https://github.com/huonw/travis-cargo/issues/12>)
   - travis-cargo coveralls --no-sudo --verify
 env:
+  - ARCH=x86_64
+  - ARCH=i686
   global:
     - RUST_BACKTRACE=1
     # override the default '--features unstable' used for the nightly branch
