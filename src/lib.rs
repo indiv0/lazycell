@@ -20,8 +20,8 @@
 //! variation on `RefCell` which allows borrows to be tied to the lifetime of
 //! the outer object.
 //!
-//! The limitation of a `LazyCell` is that after it is initialized, it can never
-//! be modified.
+//! The limitation of a `LazyCell` is that after it is initialized and shared,
+//! it can be modified.
 //!
 //! # Example
 //!
@@ -84,6 +84,15 @@ impl<T> LazyCell<T> {
     /// initialized, and `None` if it has not yet been initialized.
     pub fn borrow(&self) -> Option<&T> {
         unsafe { &*self.inner.get() }.as_ref()
+    }
+
+    /// Borrows the contents of this lazy cell mutably for the duration of the cell
+    /// itself.
+    ///
+    /// This function will return `Some` if the cell has been previously
+    /// initialized, and `None` if it has not yet been initialized.
+    pub fn borrow_mut(&mut self) -> Option<&mut T> {
+        unsafe { &mut *self.inner.get() }.as_mut()
     }
 
     /// Borrows the contents of this lazy cell for the duration of the cell
@@ -222,6 +231,22 @@ mod tests {
 
         let value = lazycell.get();
         assert_eq!(value, Some(1));
+    }
+
+    #[test]
+    fn test_borrow_mut() {
+        let mut lazycell = LazyCell::new();
+        assert!(lazycell.borrow_mut().is_none());
+
+        lazycell.fill(1).unwrap();
+        assert_eq!(lazycell.borrow_mut(), Some(&mut 1));
+
+        *lazycell.borrow_mut().unwrap() = 2;
+        assert_eq!(lazycell.borrow_mut(), Some(&mut 2));
+
+        // official way to reset the cell
+        lazycell = LazyCell::new();
+        assert!(lazycell.borrow_mut().is_none());
     }
 
     #[test]
