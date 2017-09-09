@@ -100,25 +100,37 @@ impl<T> LazyCell<T> {
     ///
     /// If the cell has not yet been filled, the cell is first filled using the
     /// function provided.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the cell becomes filled as a side effect of `f`.
     pub fn borrow_with<F: FnOnce() -> T>(&self, f: F) -> &T {
-        let mut slot = unsafe { &mut *self.inner.get() };
-        if !slot.is_some() {
-            *slot = Some(f());
+        if let Some(value) = self.borrow() {
+            return value;
         }
-
-        slot.as_ref().unwrap()
+        let value = f();
+        if let Err(_) = self.fill(value) {
+            panic!("borrow_with: cell was filled by closure")
+        }
+        self.borrow().unwrap()
     }
 
     /// Same as `borrow_with`, but allows the initializing function to fail.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the cell becomes filled as a side effect of `f`.
     pub fn try_borrow_with<E, F>(&self, f: F) -> Result<&T, E>
         where F: FnOnce() -> Result<T, E>
     {
-        let mut slot = unsafe { &mut *self.inner.get() };
-        if !slot.is_some() {
-            *slot = Some(f()?);
+        if let Some(value) = self.borrow() {
+            return Ok(value);
         }
-
-        Ok(slot.as_ref().unwrap())
+        let value = f()?;
+        if let Err(_) = self.fill(value) {
+            panic!("try_borrow_with: cell was filled by closure")
+        }
+        Ok(self.borrow().unwrap())
     }
 
     /// Consumes this `LazyCell`, returning the underlying value.
@@ -297,6 +309,22 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_borrow_with_sound_with_reentrancy() {
+        // Kudos to dbaupp for discovering this issue
+        // https://www.reddit.com/r/rust/comments/5vs9rt/lazycell_a_rust_library_providing_a_lazilyfilled/de527xm/
+        let lazycell: LazyCell<Box<i32>> = LazyCell::new();
+
+        let mut reference: Option<&i32> = None;
+
+        lazycell.borrow_with(|| {
+            let _ = lazycell.fill(Box::new(1));
+            reference = lazycell.borrow().map(|r| &**r);
+            Box::new(2)
+        });
+    }
+
+    #[test]
     fn test_try_borrow_with_ok() {
         let lazycell = LazyCell::new();
         let result = lazycell.try_borrow_with::<(), _>(|| Ok(1));
@@ -316,6 +344,20 @@ mod tests {
         lazycell.fill(1).unwrap();
         let result = lazycell.try_borrow_with::<(), _>(|| unreachable!());
         assert_eq!(result, Ok(&1));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_try_borrow_with_sound_with_reentrancy() {
+        let lazycell: LazyCell<Box<i32>> = LazyCell::new();
+
+        let mut reference: Option<&i32> = None;
+
+        let _ = lazycell.try_borrow_with::<(), _>(|| {
+            let _ = lazycell.fill(Box::new(1));
+            reference = lazycell.borrow().map(|r| &**r);
+            Ok(Box::new(2))
+        });
     }
 
     #[test]
