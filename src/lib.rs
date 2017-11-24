@@ -223,7 +223,7 @@ impl<T: Copy> AtomicLazyCell<T> {
     }
 }
 
-unsafe impl<T: Sync> Sync for AtomicLazyCell<T> {}
+unsafe impl<T: Sync + Send> Sync for AtomicLazyCell<T> {}
 
 unsafe impl<T: Send> Send for AtomicLazyCell<T> {}
 
