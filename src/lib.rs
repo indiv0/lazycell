@@ -62,12 +62,12 @@ impl<T> LazyCell<T> {
     /// Put a value into this cell.
     ///
     /// This function will return `Err(value)` is the cell is already full.
-    pub fn fill(&self, t: T) -> Result<(), T> {
+    pub fn fill(&self, value: T) -> Result<(), T> {
         let mut slot = unsafe { &mut *self.inner.get() };
         if slot.is_some() {
-            return Err(t);
+            return Err(value);
         }
-        *slot = Some(t);
+        *slot = Some(value);
 
         Ok(())
     }
@@ -107,6 +107,18 @@ impl<T> LazyCell<T> {
         }
 
         slot.as_ref().unwrap()
+    }
+
+    /// Same as `borrow_with`, but allows the initializing function to fail.
+    pub fn try_borrow_with<E, F>(&self, f: F) -> Result<&T, E>
+        where F: FnOnce() -> Result<T, E>
+    {
+        let mut slot = unsafe { &mut *self.inner.get() };
+        if !slot.is_some() {
+            *slot = Some(f()?);
+        }
+
+        Ok(slot.as_ref().unwrap())
     }
 
     /// Consumes this `LazyCell`, returning the underlying value.
@@ -282,6 +294,28 @@ mod tests {
 
         let value = lazycell.borrow_with(|| 2);
         assert_eq!(&1, value);
+    }
+
+    #[test]
+    fn test_try_borrow_with_ok() {
+        let lazycell = LazyCell::new();
+        let result = lazycell.try_borrow_with::<(), _>(|| Ok(1));
+        assert_eq!(result, Ok(&1));
+    }
+
+    #[test]
+    fn test_try_borrow_with_err() {
+        let lazycell = LazyCell::<()>::new();
+        let result = lazycell.try_borrow_with(|| Err(1));
+        assert_eq!(result, Err(1));
+    }
+
+    #[test]
+    fn test_try_borrow_with_already_filled() {
+        let lazycell = LazyCell::new();
+        lazycell.fill(1).unwrap();
+        let result = lazycell.try_borrow_with::<(), _>(|| unreachable!());
+        assert_eq!(result, Ok(&1));
     }
 
     #[test]
