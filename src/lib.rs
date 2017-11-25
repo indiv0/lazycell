@@ -48,7 +48,7 @@ use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A lazily filled `Cell`, with frozen contents.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct LazyCell<T> {
     inner: UnsafeCell<Option<T>>,
 }
@@ -155,7 +155,7 @@ const LOCK: usize = 1;
 const SOME: usize = 2;
 
 /// A lazily filled `Cell`, with frozen contents.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AtomicLazyCell<T> {
     inner: UnsafeCell<Option<T>>,
     state: AtomicUsize,
