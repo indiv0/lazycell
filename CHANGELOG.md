@@ -1,3 +1,27 @@
+<a name="0.6.0"></a>
+## 0.6.0 (2017-11-25)
+
+
+#### Bug Fixes
+
+*   fix soundness hole in borrow_with ([d1f46bef](https://github.com/indiv0/lazycell/commit/d1f46bef9d1397570aa9c3e87e18e0d16e6d1585))
+
+#### Features
+
+*   add Default derives ([71bc5088](https://github.com/indiv0/lazycell/commit/71bc50880cd8e20002038197c9b890f5b76ad096))
+*   add LazyCell::try_borrow_with ([bffa4028](https://github.com/indiv0/lazycell/commit/bffa402896670b5c78a9ec050d82a58ee98de6fb))
+*   add LazyCell::borrow_mut method ([fd419dea](https://github.com/indiv0/lazycell/commit/fd419dea965ff1ad3853f26f37e8d107c6ca096c))
+
+#### Breaking Changes
+
+*   add `T: Send` for `AtomicLazyCell` `Sync` impl ([668bb2fa](https://github.com/indiv0/lazycell/commit/668bb2fa974fd6707c4c7edad292c76a9017d74d), closes [#67](https://github.com/indiv0/lazycell/issues/67))
+
+#### Improvements
+
+*   add `T: Send` for `AtomicLazyCell` `Sync` impl ([668bb2fa](https://github.com/indiv0/lazycell/commit/668bb2fa974fd6707c4c7edad292c76a9017d74d), closes [#67](https://github.com/indiv0/lazycell/issues/67))
+
+
+
 <a name="v0.5.1"></a>
 ## v0.5.1 (2017-03-24)
 
