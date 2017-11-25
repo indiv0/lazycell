@@ -109,7 +109,7 @@ impl<T> LazyCell<T> {
             return value;
         }
         let value = f();
-        if let Err(_) = self.fill(value) {
+        if self.fill(value).is_err() {
             panic!("borrow_with: cell was filled by closure")
         }
         self.borrow().unwrap()
@@ -127,7 +127,7 @@ impl<T> LazyCell<T> {
             return Ok(value);
         }
         let value = f()?;
-        if let Err(_) = self.fill(value) {
+        if self.fill(value).is_err() {
             panic!("try_borrow_with: cell was filled by closure")
         }
         Ok(self.borrow().unwrap())
