@@ -13,15 +13,12 @@
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
 //! This crate provides a `LazyCell` struct which acts as a lazily filled
-//! `Cell`, but with frozen contents.
+//! `Cell`.
 //!
 //! With a `RefCell`, the inner contents cannot be borrowed for the lifetime of
 //! the entire object, but only of the borrows returned. A `LazyCell` is a
 //! variation on `RefCell` which allows borrows to be tied to the lifetime of
 //! the outer object.
-//!
-//! The limitation of a `LazyCell` is that after it is initialized and shared,
-//! it can be modified.
 //!
 //! # Example
 //!
@@ -42,12 +39,14 @@
 //! ```
 //!
 //! `AtomicLazyCell` is a variant that uses an atomic variable to manage
-//! coordination in a thread-safe fashion.
+//! coordination in a thread-safe fashion. The limitation of an `AtomicLazyCell`
+//! is that after it is initialized, it can't be modified.
+
 
 use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// A lazily filled `Cell`, with frozen contents.
+/// A lazily filled `Cell`, with mutable contents.
 #[derive(Debug, Default)]
 pub struct LazyCell<T> {
     inner: UnsafeCell<Option<T>>,
@@ -154,7 +153,7 @@ const NONE: usize = 0;
 const LOCK: usize = 1;
 const SOME: usize = 2;
 
-/// A lazily filled `Cell`, with frozen contents.
+/// A lazily filled and thread-safe `Cell`, with frozen contents.
 #[derive(Debug, Default)]
 pub struct AtomicLazyCell<T> {
     inner: UnsafeCell<Option<T>>,
