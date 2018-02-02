@@ -115,6 +115,27 @@ impl<T> LazyCell<T> {
         self.borrow().unwrap()
     }
 
+    /// Borrows the contents of this lazy cell mutably for the duration of the cell
+    /// itself.
+    ///
+    /// If the cell has not yet been filled, the cell is first filled using the
+    /// function provided.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the cell becomes filled as a side effect of `f`.
+    pub fn borrow_mut_with<F: FnOnce() -> T>(&mut self, f: F) -> &mut T {
+        if self.filled() {
+            self.borrow_mut().unwrap()
+        } else {
+            let value = f();
+            if self.fill(value).is_err() {
+                panic!("borrow_mut_with: cell was filled by closure")
+            }
+            self.borrow_mut().unwrap()
+        }
+    }
+
     /// Same as `borrow_with`, but allows the initializing function to fail.
     ///
     /// # Panics
@@ -131,6 +152,24 @@ impl<T> LazyCell<T> {
             panic!("try_borrow_with: cell was filled by closure")
         }
         Ok(self.borrow().unwrap())
+    }
+
+    /// Same as `borrow_mut_with`, but allows the initializing function to fail.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the cell becomes filled as a side effect of `f`.
+    pub fn try_borrow_mut_with<E, F>(&mut self, f: F) -> Result<&mut T, E>
+        where F: FnOnce() -> Result<T, E>
+    {
+        if self.filled() {
+            return Ok(self.borrow_mut().unwrap());
+        }
+        let value = f()?;
+        if self.fill(value).is_err() {
+            panic!("try_borrow_mut_with: cell was filled by closure")
+        }
+        Ok(self.borrow_mut().unwrap())
     }
 
     /// Consumes this `LazyCell`, returning the underlying value.
