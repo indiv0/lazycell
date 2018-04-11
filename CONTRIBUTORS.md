@@ -7,5 +7,6 @@ alphabetical order.
 * [J/A](https://github.com/archer884)
 * [Jack O'Connor](https://github.com/oconnor663)
 * [Nikita Pekin](https://github.com/indiv0)
+* [Ossi Herrala](https://github.com/oherrala)
 
 [lazycell]: https://github.com/indiv0/lazycell
