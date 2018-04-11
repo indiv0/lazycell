@@ -135,7 +135,11 @@ impl<T> LazyCell<T> {
 
     /// Consumes this `LazyCell`, returning the underlying value.
     pub fn into_inner(self) -> Option<T> {
-        self.inner.into_inner()
+        // Rust 1.25 changed UnsafeCell::into_inner() from unsafe to safe
+        // function. This unsafe can be removed when supporting Rust older than
+        // 1.25 is not needed.
+        #[allow(unused_unsafe)]
+        unsafe { self.inner.into_inner() }
     }
 }
 
@@ -206,7 +210,11 @@ impl<T> AtomicLazyCell<T> {
 
     /// Consumes this `LazyCell`, returning the underlying value.
     pub fn into_inner(self) -> Option<T> {
-        self.inner.into_inner()
+        // Rust 1.25 changed UnsafeCell::into_inner() from unsafe to safe
+        // function. This unsafe can be removed when supporting Rust older than
+        // 1.25 is not needed.
+        #[allow(unused_unsafe)]
+        unsafe { self.inner.into_inner() }
     }
 }
 
