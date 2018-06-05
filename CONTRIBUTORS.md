@@ -4,6 +4,7 @@ alphabetical order.
 * [Aaron Trent](https://github.com/novacrazy)
 * [Aleksey Kladov](https://github.com/matklad)
 * [Carl Lerche](https://github.com/carllerche)
+* [est31](https://github.com/est31)
 * [J/A](https://github.com/archer884)
 * [Jack O'Connor](https://github.com/oconnor663)
 * [Nikita Pekin](https://github.com/indiv0)
