@@ -8,6 +8,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![cfg_attr(not(test), no_std)]
+
 #![deny(missing_docs)]
 #![cfg_attr(feature = "nightly", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
@@ -43,6 +45,10 @@
 //!
 //! `AtomicLazyCell` is a variant that uses an atomic variable to manage
 //! coordination in a thread-safe fashion.
+
+#[cfg(not(test))]
+#[macro_use]
+extern crate core as std;
 
 use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicUsize, Ordering};
