@@ -1,3 +1,13 @@
+<a name="v1.0.0"></a>
+## v1.0.0 (2018-06-06)
+
+
+#### Features
+
+*   Add #![no_std] ([e59f6b55](https://github.com/indiv0/lazycell/commit/e59f6b5531e310d3df26b0eb40b1431937f38096))
+
+
+
 <a name="0.6.0"></a>
 ## 0.6.0 (2017-11-25)
 
