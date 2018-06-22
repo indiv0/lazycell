@@ -172,12 +172,15 @@ pub struct AtomicLazyCell<T> {
 }
 
 impl<T> AtomicLazyCell<T> {
+    /// An empty cell.
+    pub const NONE: Self = Self {
+        inner: UnsafeCell::new(None),
+        state: AtomicUsize::new(NONE),
+    };
+
     /// Creates a new, empty, `AtomicLazyCell`.
     pub fn new() -> AtomicLazyCell<T> {
-        AtomicLazyCell {
-            inner: UnsafeCell::new(None),
-            state: AtomicUsize::new(NONE),
-        }
+        Self::NONE
     }
 
     /// Put a value into this cell.
