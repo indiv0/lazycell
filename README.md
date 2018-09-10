@@ -30,7 +30,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-lazycell = "1.0"
+lazycell = "1.1"
 ```
 
 And in your `lib.rs` or `main.rs`:
