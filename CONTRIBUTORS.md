@@ -10,5 +10,6 @@ alphabetical order.
 * [Jack O'Connor](https://github.com/oconnor663)
 * [Nikita Pekin](https://github.com/indiv0)
 * [Ossi Herrala](https://github.com/oherrala)
+* [Stephen M. Coakley](https://github.com/sagebind)
 
 [lazycell]: https://github.com/indiv0/lazycell
