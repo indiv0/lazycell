@@ -53,6 +53,10 @@ use std::cell::UnsafeCell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A lazily filled `Cell`, with mutable contents.
+///
+/// A `LazyCell` is completely frozen once filled, **unless** you have `&mut`
+/// access to it, in which case `LazyCell::borrow_mut` may be used to mutate the
+/// contents.
 #[derive(Debug, Default)]
 pub struct LazyCell<T> {
     inner: UnsafeCell<Option<T>>,
