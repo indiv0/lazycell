@@ -50,6 +50,7 @@
 extern crate core as std;
 
 use std::cell::UnsafeCell;
+use std::mem;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// A lazily filled `Cell`, with mutable contents.
@@ -79,6 +80,20 @@ impl<T> LazyCell<T> {
         *slot = Some(value);
 
         Ok(())
+    }
+
+    /// Put a value into this cell.
+    ///
+    /// Note that this function is infallible but requires `&mut self`. By
+    /// requiring `&mut self` we're guaranteed that no active borrows to this
+    /// cell can exist so we can always fill in the value. This may not always
+    /// be usable, however, as `&mut self` may not be possible to borrow.
+    ///
+    /// # Return value
+    ///
+    /// This function returns the previous value, if any.
+    pub fn replace(&mut self, value: T) -> Option<T> {
+        mem::replace(unsafe { &mut *self.inner.get() }, Some(value))
     }
 
     /// Test whether this cell has been previously filled.
@@ -239,6 +254,24 @@ impl<T> AtomicLazyCell<T> {
         }
 
         Ok(())
+    }
+
+    /// Put a value into this cell.
+    ///
+    /// Note that this function is infallible but requires `&mut self`. By
+    /// requiring `&mut self` we're guaranteed that no active borrows to this
+    /// cell can exist so we can always fill in the value. This may not always
+    /// be usable, however, as `&mut self` may not be possible to borrow.
+    ///
+    /// # Return value
+    ///
+    /// This function returns the previous value, if any.
+    pub fn replace(&mut self, value: T) -> Option<T> {
+        match mem::replace(self.state.get_mut(), SOME) {
+            NONE | SOME => {}
+            _ => panic!("cell in inconsistent state"),
+        }
+        mem::replace(unsafe { &mut *self.inner.get() }, Some(value))
     }
 
     /// Test whether this cell has been previously filled.
@@ -525,5 +558,26 @@ mod tests {
         lazycell.fill(1).unwrap();
         let value = lazycell.into_inner();
         assert_eq!(value, Some(1));
+    }
+
+    #[test]
+    fn normal_replace() {
+        let mut cell = LazyCell::new();
+        assert_eq!(cell.fill(1), Ok(()));
+        assert_eq!(cell.replace(2), Some(1));
+        assert_eq!(cell.replace(3), Some(2));
+        assert_eq!(cell.borrow(), Some(&3));
+
+        let mut cell = LazyCell::new();
+        assert_eq!(cell.replace(2), None);
+    }
+
+    #[test]
+    fn atomic_replace() {
+        let mut cell = AtomicLazyCell::new();
+        assert_eq!(cell.fill(1), Ok(()));
+        assert_eq!(cell.replace(2), Some(1));
+        assert_eq!(cell.replace(3), Some(2));
+        assert_eq!(cell.borrow(), Some(&3));
     }
 }
