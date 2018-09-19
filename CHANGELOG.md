@@ -1,3 +1,13 @@
+<a name="v1.2.0"></a>
+## v1.2.0 (2018-09-19)
+
+
+#### Features
+
+*   add `LazyCell::replace` for infallible access ([a63ffb90](https://github.com/indiv0/lazycell/commit/a63ffb9040a5e0683a9bbf9d3d5ef589f2ca8b7c))
+
+
+
 <a name="v1.1.0"></a>
 ## v1.1.0 (2018-09-10)
 
