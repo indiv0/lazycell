@@ -3,6 +3,7 @@ alphabetical order.
 
 * [Aaron Trent](https://github.com/novacrazy)
 * [Aleksey Kladov](https://github.com/matklad)
+* [Alex Crichton](https://github.com/alexcrichton)
 * [Carl Lerche](https://github.com/carllerche)
 * [Dave Herman](https://github.com/dherman)
 * [est31](https://github.com/est31)
