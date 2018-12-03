@@ -215,6 +215,17 @@ impl<T: Copy> LazyCell<T> {
     }
 }
 
+impl <T: Clone> Clone for LazyCell<T> {
+    /// Create a clone of this `LazyCell`
+    ///
+    /// If self has not been initialized, returns an uninitialized `LazyCell`
+    /// otherwise returns a `LazyCell` already initialized with a clone of the
+    /// contents of self.
+    fn clone(&self) -> LazyCell<T> {
+        LazyCell { inner: UnsafeCell::new(self.borrow().map(Clone::clone) ) }
+    }
+}
+
 // Tracks the AtomicLazyCell inner state
 const NONE: usize = 0;
 const LOCK: usize = 1;
@@ -311,6 +322,23 @@ impl<T: Copy> AtomicLazyCell<T> {
             SOME => unsafe { *self.inner.get() },
             _ => None,
         }
+    }
+}
+
+impl<T: Clone> Clone for AtomicLazyCell<T> {
+    /// Create a clone of this `AtomicLazyCell`
+    ///
+    /// If self has not been initialized, returns an uninitialized `AtomicLazyCell`
+    /// otherwise returns an `AtomicLazyCell` already initialized with a clone of the
+    /// contents of self.
+    fn clone(&self) -> AtomicLazyCell<T> {
+        self.borrow().map_or(
+            Self::NONE,
+            |v| AtomicLazyCell {
+                inner: UnsafeCell::new(Some(v.clone())),
+                state: AtomicUsize::new(SOME),
+            }
+        )
     }
 }
 
@@ -579,5 +607,43 @@ mod tests {
         assert_eq!(cell.replace(2), Some(1));
         assert_eq!(cell.replace(3), Some(2));
         assert_eq!(cell.borrow(), Some(&3));
+    }
+
+    #[test]
+    fn clone() {
+        let mut cell = LazyCell::new();
+        let clone1 = cell.clone();
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(cell.fill(1), Ok(()));
+        let mut clone2 = cell.clone();
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(clone2.borrow(), Some(&1));
+        assert_eq!(cell.replace(2), Some(1));
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(clone2.borrow(), Some(&1));
+        assert_eq!(clone1.fill(3), Ok(()));
+        assert_eq!(clone2.replace(4), Some(1));
+        assert_eq!(clone1.borrow(), Some(&3));
+        assert_eq!(clone2.borrow(), Some(&4));
+        assert_eq!(cell.borrow(), Some(&2));
+    }
+
+    #[test]
+    fn clone_atomic() {
+        let mut cell = AtomicLazyCell::new();
+        let clone1 = cell.clone();
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(cell.fill(1), Ok(()));
+        let mut clone2 = cell.clone();
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(clone2.borrow(), Some(&1));
+        assert_eq!(cell.replace(2), Some(1));
+        assert_eq!(clone1.borrow(), None);
+        assert_eq!(clone2.borrow(), Some(&1));
+        assert_eq!(clone1.fill(3), Ok(()));
+        assert_eq!(clone2.replace(4), Some(1));
+        assert_eq!(clone1.borrow(), Some(&3));
+        assert_eq!(clone2.borrow(), Some(&4));
+        assert_eq!(cell.borrow(), Some(&2));
     }
 }
