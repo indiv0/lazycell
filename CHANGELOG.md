@@ -1,3 +1,13 @@
+<a name="v1.2.1"></a>
+## v1.2.1 (2018-12-03)
+
+
+#### Features
+
+*   Implement Clone for LazyCell and AtomicLazyCell ([30fe4a8f](https://github.com/indiv0/lazycell/commit/30fe4a8f568059b3c78ed149a810962a676cb2b2))
+
+
+
 <a name="v1.2.0"></a>
 ## v1.2.0 (2018-09-19)
 
