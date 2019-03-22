@@ -71,7 +71,7 @@ impl<T> LazyCell<T> {
 
     /// Put a value into this cell.
     ///
-    /// This function will return `Err(value)` is the cell is already full.
+    /// This function will return `Err(value)` if the cell is already full.
     pub fn fill(&self, value: T) -> Result<(), T> {
         let slot = unsafe { &mut *self.inner.get() };
         if slot.is_some() {
@@ -252,7 +252,7 @@ impl<T> AtomicLazyCell<T> {
 
     /// Put a value into this cell.
     ///
-    /// This function will return `Err(value)` is the cell is already full.
+    /// This function will return `Err(value)` if the cell is already full.
     pub fn fill(&self, t: T) -> Result<(), T> {
         if NONE != self.state.compare_and_swap(NONE, LOCK, Ordering::Acquire) {
             return Err(t);
