@@ -6,12 +6,13 @@ alphabetical order.
 * [Alex Crichton](https://github.com/alexcrichton)
 * [Carl Lerche](https://github.com/carllerche)
 * [Dave Herman](https://github.com/dherman)
+* [David Halperin](https://github.com/davidhalperin)
 * [est31](https://github.com/est31)
+* [Geoff Yoerger](https://github.com/DirkyJerky)
 * [J/A](https://github.com/archer884)
 * [Jack O'Connor](https://github.com/oconnor663)
 * [Nikita Pekin](https://github.com/indiv0)
 * [Ossi Herrala](https://github.com/oherrala)
 * [Stephen M. Coakley](https://github.com/sagebind)
-* [David Halperin](https://github.com/davidhalperin)
 
 [lazycell]: https://github.com/indiv0/lazycell
