@@ -301,6 +301,17 @@ impl<T> AtomicLazyCell<T> {
             _ => None,
         }
     }
+    /// Borrows the contents of this lazy cell mutably for the duration of the
+    /// cell itself.
+    ///
+    /// This function will return `Some` if the cell has been previously
+    /// initialized, and `None` if it has not yet been initialized.
+    pub fn borrow_mut(&mut self) -> Option<&mut T> {
+        match self.state.load(Ordering::Acquire) {
+            SOME => unsafe { &mut *self.inner.get() }.as_mut(),
+            _ => None,
+        }
+    }
 
     /// Consumes this `LazyCell`, returning the underlying value.
     pub fn into_inner(self) -> Option<T> {
@@ -569,6 +580,22 @@ mod tests {
 
         let value = lazycell.get();
         assert_eq!(value, Some(1));
+    }
+
+    #[test]
+    fn test_atomic_borrow_mut() {
+        let mut lazycell = AtomicLazyCell::new();
+        assert!(lazycell.borrow_mut().is_none());
+
+        lazycell.fill(1).unwrap();
+        assert_eq!(lazycell.borrow_mut(), Some(&mut 1));
+
+        *lazycell.borrow_mut().unwrap() = 2;
+        assert_eq!(lazycell.borrow_mut(), Some(&mut 2));
+
+        // official way to reset the cell
+        lazycell = AtomicLazyCell::new();
+        assert!(lazycell.borrow_mut().is_none());
     }
 
     #[test]
