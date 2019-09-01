@@ -73,10 +73,11 @@ impl<T> LazyCell<T> {
     ///
     /// This function will return `Err(value)` if the cell is already full.
     pub fn fill(&self, value: T) -> Result<(), T> {
-        let slot = unsafe { &mut *self.inner.get() };
+        let slot = unsafe { &*self.inner.get() };
         if slot.is_some() {
             return Err(value);
         }
+        let slot = unsafe { &mut *self.inner.get() };
         *slot = Some(value);
 
         Ok(())
