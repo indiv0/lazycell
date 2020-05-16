@@ -14,5 +14,6 @@ alphabetical order.
 * [Nikita Pekin](https://github.com/indiv0)
 * [Ossi Herrala](https://github.com/oherrala)
 * [Stephen M. Coakley](https://github.com/sagebind)
+* [Techcable](https://github.com/Techcable)
 
 [lazycell]: https://github.com/indiv0/lazycell
