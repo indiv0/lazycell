@@ -48,6 +48,11 @@
 #[cfg(not(test))]
 #[macro_use]
 extern crate core as std;
+#[cfg(feature = "serde")]
+extern crate serde;
+
+#[cfg(feature = "serde")]
+mod serde_impl;
 
 use std::cell::UnsafeCell;
 use std::mem;
