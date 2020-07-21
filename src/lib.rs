@@ -58,7 +58,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// A `LazyCell` is completely frozen once filled, **unless** you have `&mut`
 /// access to it, in which case `LazyCell::borrow_mut` may be used to mutate the
 /// contents.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LazyCell<T> {
     inner: UnsafeCell<Option<T>>,
 }
@@ -216,6 +216,12 @@ impl<T: Copy> LazyCell<T> {
     }
 }
 
+impl<T> Default for LazyCell<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl <T: Clone> Clone for LazyCell<T> {
     /// Create a clone of this `LazyCell`
     ///
@@ -233,7 +239,7 @@ const LOCK: usize = 1;
 const SOME: usize = 2;
 
 /// A lazily filled and thread-safe `Cell`, with frozen contents.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct AtomicLazyCell<T> {
     inner: UnsafeCell<Option<T>>,
     state: AtomicUsize,
@@ -323,6 +329,12 @@ impl<T: Copy> AtomicLazyCell<T> {
             SOME => unsafe { *self.inner.get() },
             _ => None,
         }
+    }
+}
+
+impl<T> Default for AtomicLazyCell<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
