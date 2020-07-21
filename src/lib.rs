@@ -647,4 +647,17 @@ mod tests {
         assert_eq!(clone2.borrow(), Some(&4));
         assert_eq!(cell.borrow(), Some(&2));
     }
+
+    #[test]
+    fn default() {
+        #[derive(Default)]
+        struct Defaultable;
+        struct NonDefaultable;
+
+        let _: LazyCell<Defaultable> = LazyCell::default();
+        let _: LazyCell<NonDefaultable> = LazyCell::default();
+
+        let _: AtomicLazyCell<Defaultable> = AtomicLazyCell::default();
+        let _: AtomicLazyCell<NonDefaultable> = AtomicLazyCell::default();
+    }
 }
